@@ -14,16 +14,12 @@ class GuardianSpider(scrapy.Spider):
             base_url = 'https://www.theguardian.com'
             uri =  article.css('a').attrib['href']
             url = f'{base_url}{uri}'
-            
-            # yield { "url" : url }
-            
-            # yield response.follow(url, callback=self.parse_article, meta={'url': url})
-            
+
             yield scrapy.Request(url, callback=self.parse_article, meta={'url': url})
         
     def parse_article(self, response):
             item = GuardianScraperItem()
-            
+
             item['article_title'] = response.css('div.dcr-0 h1::text').get()
             item['author'] = response.css('div.dcr-0 a::text').get()
             item['summary'] = response.css('div.dcr-1yi1cnj p::text').get()

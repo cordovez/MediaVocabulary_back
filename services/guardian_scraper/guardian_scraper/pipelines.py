@@ -19,12 +19,13 @@ from .items import GuardianScraperItem
 # https://www.mongodb.com/basics/how-to-use-mongodb-to-store-scraped-data 
 class MongoDBPipeline:
     
-    collection = 'scrapy_items'
+    collection = 'the_guardian'
     
     def __init__(self, mongodb_uri, mongodb_db):
         self.mongodb_uri = mongodb_uri
         self.mongodb_db = mongodb_db
-        if not self.mongodb_uri: sys.exit("You need to provide a Connection String")
+        if not self.mongodb_uri: 
+            sys.exit("You need to provide a Connection String")
 
     @classmethod
     def from_crawler(cls, crawler):
