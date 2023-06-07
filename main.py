@@ -2,8 +2,16 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-
+from api.routes.spider_routes import spider_router
 app=FastAPI()
+
+
+
+app.include_router(spider_router, tags=["spiders"])
+
+
+
+
 
 origins = [
     "http://localhost:3000",
