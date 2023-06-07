@@ -29,4 +29,4 @@ class GuardianSpider(scrapy.Spider):
             item['url'] = response.meta['url']
             
             yield item
-            
+
