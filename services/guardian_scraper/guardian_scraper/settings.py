@@ -1,3 +1,8 @@
+from dotenv import dotenv_values
+import os
+
+dotenv_values('.env')
+
 # Scrapy settings for guardian_scraper project
 #
 # For simplicity, this file contains only settings considered important or
@@ -65,7 +70,8 @@ ROBOTSTXT_OBEY = True
 ITEM_PIPELINES = {
       "guardian_scraper.pipelines.MongoDBPipeline": 500
 }
-
+MONGODB_URI = os.getenv("MONGODB_URI")
+MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

@@ -1,24 +1,23 @@
-from fastapi import APIRouter, Depends, Query, status
+
+from fastapi import APIRouter, BackgroundTasks
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from services.guardian_scraper.guardian_scraper.spiders.guardian_spider import GuardianSpider
+
+from services.spider_subprocess import spider_crawl
+from services.guardian_scraper.guardian_scraper.spiders import guardian_spider
 
 
 
 spider_router = APIRouter()
-
-
-def run_spider(source):
-    settings = get_project_settings()
-    settings.set('SPIDER_MODULES', 
-                 ['services.guardian_scraper.guardian_scraper.spiders'])
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(GuardianSpider)  
-        
-    process.start()
     
 
 @spider_router.get("/run_spider/{source}" ) 
-async def read_source(source: str):
-    run_spider(source)
-    return {'message': "Spider has been triggered"}
+async def read_source(source):
+    # result = guardian_spider()
+    # return result
+    result =spider_crawl(source)
+    return result
+    
+    # background_tasks.add_task(spider_crawl, source, message="some notification")  
+    # return {"message": "Notification sent in the background"}
+

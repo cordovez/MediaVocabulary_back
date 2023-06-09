@@ -1,11 +1,24 @@
 from pathlib import Path
 import scrapy
 
+
 from ..items  import GuardianScraperItem
 
 class GuardianSpider(scrapy.Spider):
     name = 'guardian'
     start_urls = ['https://www.theguardian.com/uk/commentisfree']
+    
+    
+    @staticmethod
+    def extract_if_available(selector):
+        '''
+        for cases where there is no value, return 'None'
+        '''        
+        try:
+            return selector
+        except AttributeError as err:
+            print(err)
+            return None
 
     
     def parse(self, response):
@@ -20,11 +33,20 @@ class GuardianSpider(scrapy.Spider):
     def parse_article(self, response):
             item = GuardianScraperItem()
 
-            item['article_title'] = response.css('div.dcr-0 h1::text').get()
-            item['author'] = response.css('div.dcr-0 a::text').get()
-            item['summary'] = response.css('div.dcr-1yi1cnj p::text').get()
-            item['date_of_pub'] = response.css('summary.dcr-1ybxn6r span::text').get()[4:14]
-            text = response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall()  # noqa: E501
+            item['article_title'] = self.extract_if_available(response.css('div.dcr-0 h1::text').get())  # noqa: E501
+            item['author'] = self.extract_if_available(response.css('div.dcr-0 a::text').get())  # noqa: E501
+            item['summary'] = self.extract_if_available(response.css('div.dcr-1yi1cnj p::text').get())  # noqa: E501
+            raw_date = self.extract_if_available(response.css('span.dcr-u0h1qy::text').get())  # noqa: E501, F821
+            
+            if raw_date is not None:
+                item['date_of_pub'] = raw_date[4:14]
+            else:
+                item['date_of_pub'] = None
+                    
+            
+                
+                
+            text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall())  # noqa: E501
             item['content'] = ''.join(text).strip() 
             item['url'] = response.meta['url']
             

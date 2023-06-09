@@ -1,22 +1,9 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+
 import pymongo
+import logging
 import sys
 from .items import GuardianScraperItem
 
-# useful for handling different item types with a single interface
-# from itemadapter import ItemAdapter
-
-
-# class GuardianScraperPipeline:
-#     def process_item(self, item, spider):
-#         return item
-
-
-# explanation of the following code at: 
-# https://www.mongodb.com/basics/how-to-use-mongodb-to-store-scraped-data 
 class MongoDBPipeline:
     
     collection = 'the_guardian'
@@ -31,6 +18,7 @@ class MongoDBPipeline:
     def from_crawler(cls, crawler):
         return cls(
             mongodb_uri=crawler.settings.get('MONGODB_URI'),
+            # mongodb_db=crawler.settings.get('MONGODB_DATABASE')
             mongodb_db=crawler.settings.get('MONGODB_DATABASE', 'items')
         )
     
@@ -46,4 +34,5 @@ class MongoDBPipeline:
     def process_item(self, item, spider):
         data = dict(GuardianScraperItem(item))
         self.db[self.collection].insert_one(data)
+        logging.debug("Data added to MongoDB")
         return item
