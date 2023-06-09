@@ -25,18 +25,18 @@ class SmhSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse_article, meta={'url': url, 'article_title': article_title, 'author': author, 'summary': summary, 'date_of_pub': date_of_pub })  # noqa: E501
             
     def parse_article(self, response):
-            item = SmhScraperItem()
+        item = SmhScraperItem()
 
-            item['article_title'] = response.meta['article_title']
-            item['author'] = response.meta['author']
-            item['summary'] = response.meta['summary']
-            item['date_of_pub'] = response.meta['date_of_pub']
-            
-            text = response.css('div[data-testid="body-content"] p::text').getall()  # noqa: E501
-            item['content'] = ''.join(text).strip() 
-            item['url'] = response.meta['url']
-            
-            yield item        
+        item['article_title'] = response.meta['article_title']
+        item['author'] = response.meta['author']
+        item['summary'] = response.meta['summary']
+        item['date_of_pub'] = response.meta['date_of_pub']
+        
+        text = response.css('div[data-testid="body-content"] p::text').getall()  # noqa: E501
+        item['content'] = ''.join(text).strip() 
+        item['url'] = response.meta['url']
+        
+        yield item        
 """
         
         from pathlib import Path

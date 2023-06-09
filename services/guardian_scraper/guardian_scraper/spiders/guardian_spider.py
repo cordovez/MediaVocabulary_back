@@ -23,7 +23,7 @@ class GuardianSpider(scrapy.Spider):
             item['article_title'] = response.css('div.dcr-0 h1::text').get()
             item['author'] = response.css('div.dcr-0 a::text').get()
             item['summary'] = response.css('div.dcr-1yi1cnj p::text').get()
-            item['date_of_pub'] = response.css('summary.dcr-1ybxn6r span::text').get()[:14]
+            item['date_of_pub'] = response.css('summary.dcr-1ybxn6r span::text').get()[4:14]
             text = response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall()  # noqa: E501
             item['content'] = ''.join(text).strip() 
             item['url'] = response.meta['url']
