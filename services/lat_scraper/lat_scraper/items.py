@@ -7,6 +7,9 @@ import scrapy
 
 
 class LatScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    article_title = scrapy.Field()
+    summary = scrapy.Field()
+    author = scrapy.Field()
+    date_of_pub = scrapy.Field()
+    content = scrapy.Field()
+    url = scrapy.Field()
