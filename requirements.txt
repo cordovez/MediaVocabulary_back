@@ -3,3 +3,5 @@ uvicorn
 scrapy
 pymongo
 python-dotenv
+motor
+beanie
