@@ -12,7 +12,7 @@ async def get_media_data(source):
     elif source == "latimes":
         result =  await LATimes.find().to_list()
     elif source == "independent":
-        result =  await LATimes.find().to_list()
+        result =  await Independent.find().to_list()
     elif source == "smh":
         result =  await SMH.find().to_list()
     else:

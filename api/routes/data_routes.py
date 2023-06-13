@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter, HTTPException, status
 from ..controllers.data_control import get_media_data
+from services.text_analysis.text_analysis import aggregate_content
 
 data_router = APIRouter()
     
@@ -18,4 +19,9 @@ async def get_data(source):
         return  await get_media_data(source)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-   
+
+@data_router.get("/data/aggregated_content/{source}" ) 
+async def get_content(source):
+    content = await aggregate_content(source)
+    return content
+ 
