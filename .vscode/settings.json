@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["uvicorn"],
+  "cSpell.words": ["ents", "sents", "uvicorn"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },

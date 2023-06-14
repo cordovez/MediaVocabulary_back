@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException, status
 from ..controllers.data_control import get_media_data
 from services.text_analysis.text_analysis import aggregate_content
+from services.text_analysis.text_analysis import analyse_text
 
 data_router = APIRouter()
     
@@ -24,4 +25,9 @@ async def get_data(source):
 async def get_content(source):
     content = await aggregate_content(source)
     return content
+
+@data_router.get("/data/article/" ) 
+async def get_article_analysis(source, id):
+    result = await analyse_text(source, id)
+    return result
  
