@@ -28,18 +28,73 @@ async def analyse_text(source, article_id):
     text = await find_article(source, article_id)
     
     doc = nlp(text)
+    
+    total_sentences = parse_sentences(doc)
+    ents_list = parse_entities(doc)
+    verbs, adverbs, adjectives = parse_pos(doc)
+    phrasal_verbs = find_phrasal_verbs(doc)
+    
+    # return phrasal_verbs
+    # return {"verbs": verbs, "adverbs": adverbs, "adjectives": adjectives }
+    # return {"total_sentences": total_sentences, "entities": ents_list}
+    return {"sentences": {"total_sentences": total_sentences},
+            "entities": ents_list,
+            "pos": {"verb_count": len(verbs), "verbs": verbs, 
+                    "adverb_count": len(adverbs), "adverbs": adverbs,
+                    "adjective_count": len(adjectives),"adjectives": adjectives},
+            "phrasal_verbs": phrasal_verbs}
+ 
+
+def parse_sentences(doc):
     sentence_objects = list(doc.sents) # making it a list allows you to access: sentences[2]
     sentence_texts = [str(sentence) for sentence in sentence_objects ]
     total_sentences = len(sentence_texts)
     
+    return total_sentences, 
+def parse_entities(doc):
     ents_set = {(ent.text, ent.label_) for ent in doc.ents}
     ents_list = [{"entity":text, "label":label} for text, label in ents_set]
+    return ents_list
+def parse_pos(doc):
+    verbs = []
+    adverbs = []
+    adjectives =[]
     
-    return {"total_sentences": total_sentences, "entities": ents_list}
- 
+    for token in doc:
+        if token.pos_ == "VERB":
+            if token.text not in verbs:
+                verbs.append({"verb": token.text, "lemma":token.lemma_})
+        elif token.pos_ == "ADV":
+            if token.text not in adverbs:
+                adverbs.append(token.text)
+        elif token.pos_ == "ADJ":
+                if token.text not in adjectives:
+                    adjectives.append(token.text)
+
+    # example: [... "post", "-", "op" ...] becomes [... "post-op" ...]         
+    for i in range(len(adjectives) - 1):
+        if adjectives[i+1] == "-":
+            adjectives.append(adjectives[i ] + "-" + adjectives[i + 2])
+            
+    for i in range(len(adjectives) - 1, -1, -1):
+        if adjectives[i]== "-":
+            adjectives.pop(i) 
+            adjectives.pop(i) 
 
 
+    return verbs, adverbs, adjectives
 
+def find_phrasal_verbs(doc):
+    common_particles = ["around", "at", "away", "down", "in", "off", 
+                        "on", "out", "over", "round", "up"]
+    phrasal_verbs = []
+    for i in range(len(doc) - 1):
+        token = doc[i]
+        next_token = doc[i + 1]
+        if token.pos_ == "VERB" and next_token.text in common_particles and token.lemma_ != "’":
+            phrasal_verbs.append(f"{token.text} {next_token.text}")
+    return phrasal_verbs  
+    
 async def  aggregate_content(source):
     if source == "guardian":
         content =  [doc.content for doc in await TheGuardian.find().to_list()]
@@ -60,5 +115,3 @@ async def  aggregate_content(source):
     aggregated_content = " ".join(content)
     
     return aggregated_content
-
-
