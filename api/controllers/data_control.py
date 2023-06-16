@@ -7,6 +7,11 @@ from models.media_models import LATimes
 from models.media_models import SMH
 
 async def get_media_data(source):
+    """ 
+    Function takes one of four possible sources: guardian, latimes, independent, smh. 
+    
+    It returns 10 articles from that newspaper.
+    """
     if source == "guardian":
         result =  await TheGuardian.find().to_list()
     elif source == "latimes":

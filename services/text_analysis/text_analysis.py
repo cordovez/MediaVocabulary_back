@@ -25,6 +25,11 @@ async def find_article(source, article_id):
     return article.content.replace("\n", " ")
     
 async def analyse_text(source, article_id):
+    """ 
+    Function passes the values of 'source' and 'article_id' and passes them to another function that retrieves the text of the found document.
+    
+    The text will be analysed within with Spacy.
+    """
     text = await find_article(source, article_id)
     
     doc = nlp(text)
@@ -33,10 +38,7 @@ async def analyse_text(source, article_id):
     ents_list = parse_entities(doc)
     verbs, adverbs, adjectives = parse_pos(doc)
     phrasal_verbs = find_phrasal_verbs(doc)
-    
-    # return phrasal_verbs
-    # return {"verbs": verbs, "adverbs": adverbs, "adjectives": adjectives }
-    # return {"total_sentences": total_sentences, "entities": ents_list}
+   
     return {"sentences": {"total_sentences": total_sentences},
             "entities": ents_list,
             "pos": {"verb_count": len(verbs), "verbs": verbs, 
@@ -46,16 +48,34 @@ async def analyse_text(source, article_id):
  
 
 def parse_sentences(doc):
-    sentence_objects = list(doc.sents) # making it a list allows you to access: sentences[2]
+    """ 
+    Function takes a Spacy object 'doc' and parse it to find and analyse 
+    at sentence level.
+    """
+    sentence_objects = list(doc.sents) 
+    # making it a list allows you to access: sentences[2]
+    
     sentence_texts = [str(sentence) for sentence in sentence_objects ]
     total_sentences = len(sentence_texts)
     
     return total_sentences, 
 def parse_entities(doc):
+    """ 
+    Function takes a Spacy object 'doc' and parse it to find entities.
+    """
+    
     ents_set = {(ent.text, ent.label_) for ent in doc.ents}
     ents_list = [{"entity":text, "label":label} for text, label in ents_set]
     return ents_list
 def parse_pos(doc):
+    """ 
+    Function takes a Spacy object 'doc' and parse it to find verbs, adverbs, 
+    and adjectives.
+    
+    Two 'for' loops take care of compound adjectives like "post-op" 
+    that are separated at the '-'. 
+    """
+
     verbs = []
     adverbs = []
     adjectives =[]
@@ -83,8 +103,12 @@ def parse_pos(doc):
 
 
     return verbs, adverbs, adjectives
-
 def find_phrasal_verbs(doc):
+    """ 
+    Function takes a Spacy object 'doc' and parse it to find phrasal verbs. 
+    This is not a trained model.
+    """
+
     common_particles = ["around", "at", "away", "down", "in", "off", 
                         "on", "out", "over", "round", "up"]
     phrasal_verbs = []
@@ -96,6 +120,10 @@ def find_phrasal_verbs(doc):
     return phrasal_verbs  
     
 async def  aggregate_content(source):
+    """
+    Function concatenates the text from the ten articles return from the 
+    source passed as an argument.
+    """
     if source == "guardian":
         content =  [doc.content for doc in await TheGuardian.find().to_list()]
     elif source == "latimes":
