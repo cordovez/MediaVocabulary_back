@@ -1,5 +1,6 @@
-from dotenv import dotenv_values
 import os
+from dotenv import dotenv_values
+
 
 dotenv_values('.env')
 
@@ -67,9 +68,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-      "guardian_scraper.pipelines.MongoDBPipeline": 500
-}
+# ITEM_PIPELINES = {
+#       "guardian_scraper.pipelines.MongoDBPipeline": 500
+# }
 MONGODB_URI = os.getenv("MONGODB_URI")
 MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
 
