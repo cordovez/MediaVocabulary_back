@@ -1,30 +1,51 @@
 
-from fastapi import APIRouter, BackgroundTasks
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
+import subprocess
+import os
+from dotenv import load_dotenv
 
-from services.spider_subprocess import spider_crawl
+from fastapi import APIRouter
 
-from services.guardian_scraper.guardian_scraper.spiders.guardian_spider import GuardianSpider
+load_dotenv()
+MONGODB_URI = os.getenv("MONGODB_URI")
+MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
 
-spider_router = APIRouter()
+def get_path_to_project(spider):
+    """ function takes in a spider name ("source") and it is matched to 
+    its corresponding scrapy project directory"""
+    if spider == 'guardian':
+        project = 'guardian_scraper'
+    elif spider == 'indo':
+        project = 'indo_scraper'
+    elif spider == 'latimes':
+        project = 'lat_scraper'
+    elif spider == 'smh':
+        project = 'smh_scraper'
+    else: 
+        project = 'does_not_exist'
     
+    return project
+    
+spider_router = APIRouter()
 
 @spider_router.get("/run_spider/{source}" ) 
-def run_spider():
-    process = CrawlerProcess(settings={
-        "BOT_NAME": "guardian_scraper",
-        "SPIDER_MODULES": ["guardian_scraper.spiders"],
-        "NEWSPIDER_MODULE": "guardian_scraper.spiders",
-        # Add any other Scrapy settings if necessary
-    })
+def run_spider(source):
+    """ This route requires a source as a path parameter and it depends on the name of that source matching the name of the corresponding spider. The options are:
 
-    process.crawl(GuardianSpider)  # Replace with the actual name of your spider
-    process.start()
-    return {"message": "Spider started successfully!"}
+    - guardian
+    - indo
+    - latimes
+    - smh
 
-# async def read_source(source):
-#     if source == 'guardian':
-#         result =spider_crawl(guardian_spider)
-#         return result
-   
+"""  # noqa: E501
+
+    # scrapy requires that the "command" be called from within the directory 
+    # that contains the spider. This creates the absolute path.
+    scraper_project_route = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'services', get_path_to_project(source)))
+
+    # This changes the directory to the above path and calls the command.
+    os.chdir(scraper_project_route)
+    command = f"scrapy crawl -s MONGODB_URI='{MONGODB_URI}' -s MONGODB_DATABASE='{MONGODB_DATABASE}' {source}"  # noqa: E501
+    
+    subprocess.run(command, shell=True)
+    
+    return {"message": "Spider execution initiated!"}
