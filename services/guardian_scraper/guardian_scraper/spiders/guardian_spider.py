@@ -39,7 +39,7 @@ class GuardianSpider(scrapy.Spider):
             raw_date = self.extract_if_available(response.css('span.dcr-u0h1qy::text').get())  # noqa: E501, F821
             
             if raw_date is not None:
-                item['date_of_pub'] = raw_date[4:14]
+                item['date_of_pub'] = raw_date[4:15]
             else:
                 item['date_of_pub'] = None
                     
