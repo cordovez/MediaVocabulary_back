@@ -1,5 +1,6 @@
 import scrapy
 from ..items import IndoScraperItem 
+from datetime import datetime
 
 @staticmethod
 def extract_if_available(item, selector):
@@ -32,7 +33,13 @@ class IndoSpider(scrapy.Spider):
         item['article_title'] = response.css('header h1::text').get()
         item['summary'] = response.css('div[data-testid="article-intro"] p::text').get()
         item['author'] = response.css('span[data-testid="article-author"]::text').get()
-        item['date_of_pub'] = response.css('time[data-testid="article-date"] ::attr(datetime)').get() # noqa: E501
+        
+        # item['date_of_pub'] = response.css('time[data-testid="article-date"] ::attr(datetime)').get() # noqa: E501
+        
+        date_string = response.css('time[data-testid="article-date"] ::attr(datetime)').get() # noqa: E501
+        date_format = "%Y-%m-%dT%H:%M:%SZ"
+        datetime_object = datetime.strptime(date_string, date_format)
+        item['date_of_pub'] = datetime_object
         
         first_paragraph = response.css('div[data-testid="article-intro"] p::text').get()
         body = response.css('div[data-testid="article-body"] p::text').getall()

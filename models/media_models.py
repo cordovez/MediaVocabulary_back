@@ -10,7 +10,7 @@ class TheGuardian(Document):
     article_title : Optional[str] | None = None
     summary : Optional[str] | None = None
     author : Optional[str] | None = None
-    date_of_pub : Optional[str] | None = None
+    date_of_pub : Optional[datetime] | None = None
     content : Optional[str] | None = None
     url : Optional[str] | None = None
     
@@ -33,7 +33,7 @@ class Independent(Document):
     article_title : Optional[str] | None = None
     summary : Optional[str] | None = None
     author : Optional[str] | None = None
-    date_of_pub : Optional[str] | None = None
+    date_of_pub : Optional[datetime] | None = None
     content : Optional[str] | None = None
     url : Optional[str] | None = None
     
@@ -57,7 +57,7 @@ class LATimes(Document):
     article_title : Optional[str] | None = None
     summary : Optional[str] | None = None
     author : Optional[str] | None = None
-    date_of_pub : Optional[str] | None = None
+    date_of_pub : Optional[datetime] | None = None
     content : Optional[str] | None = None
     url : Optional[str] | None = None
     
@@ -80,7 +80,7 @@ class SMH(Document):
     article_title : Optional[str] | None = None
     summary : Optional[str] | None = None
     author : Optional[str] | None = None
-    date_of_pub : Optional[str] | None = None
+    date_of_pub : Optional[datetime] | None = None
     content : Optional[str] | None = None
     url : Optional[str] | None = None
     
