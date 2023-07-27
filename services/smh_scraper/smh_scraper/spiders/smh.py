@@ -1,7 +1,6 @@
 
 import scrapy
 from ..items import SmhScraperItem
-from datetime import datetime
 
 class SmhSpider(scrapy.Spider):
     name = "smh"
@@ -15,14 +14,12 @@ class SmhSpider(scrapy.Spider):
             summary = article.css('p::text').get() 
             
             datetime_str = article.css('ul li time[datetime]::attr(datetime)').get()
-            datetime_obj = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
-            date_of_pub = datetime_obj.strftime("%d %b %Y")
             
             base_url = "https://www.smh.com.au"
             uri =  article.css('h3 a::attr(href)').get() 
             url = f'{base_url}{uri}'
             
-            yield scrapy.Request(url, callback=self.parse_article, meta={'url': url, 'article_title': article_title, 'author': author, 'summary': summary, 'date_of_pub': date_of_pub })  # noqa: E501
+            yield scrapy.Request(url, callback=self.parse_article, meta={'url': url, 'article_title': article_title, 'author': author, 'summary': summary, 'date_of_pub': datetime_str })  # noqa: E501
             
     def parse_article(self, response):
         item = SmhScraperItem()

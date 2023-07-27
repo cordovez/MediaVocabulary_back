@@ -1,5 +1,6 @@
 from pathlib import Path
 import scrapy
+from datetime import datetime
 
 
 from ..items  import GuardianScraperItem
@@ -36,17 +37,22 @@ class GuardianSpider(scrapy.Spider):
             item['article_title'] = self.extract_if_available(response.css('div.dcr-0 h1::text').get())  # noqa: E501
             item['author'] = self.extract_if_available(response.css('div.dcr-0 a::text').get())  # noqa: E501
             item['summary'] = self.extract_if_available(response.css('div.dcr-1yi1cnj p::text').get())  # noqa: E501
-            raw_date = self.extract_if_available(response.css('span.dcr-u0h1qy::text').get())  # noqa: E501, F821
+            raw_date = self.extract_if_available(response.css('span.dcr-u0h1qy::text').get()[0:21])  # noqa: E501, F821
             
             if raw_date is not None:
-                item['date_of_pub'] = raw_date[4:15]
+                # Define the format of the date string based on its structure
+                date_format = "%a %d %b %Y %H.%M"
+                datetime_object = datetime.strptime(raw_date, date_format)
+
+                item['date_of_pub'] = datetime_object
             else:
                 item['date_of_pub'] = None
                     
             
                 
                 
-            text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall())  # noqa: E501
+            text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector p ::text').getall())  # noqa: E501
+            # text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall())  # noqa: E501
             item['content'] = ''.join(text).strip() 
             item['url'] = response.meta['url']
             

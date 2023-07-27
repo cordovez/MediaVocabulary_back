@@ -19,7 +19,7 @@ class LatimesSpider(scrapy.Spider):
         item['article_title'] = response.css('h1.headline::text').get().replace('\xa0', ' ').strip()  # noqa: E501
         item['author'] = response.css('div.author-name a::text').get()
         item['summary'] = response.css('div[data-testid="article-intro"] p::text').get()
-        item['date_of_pub'] = response.css('time span.published-date-day::text').get()
+        item['date_of_pub'] = response.css('time ::attr(datetime)').get()
         
         body = response.css('div[data-element="story-body"] p ::text').getall()
         clean_body = ''.join(body).strip()
