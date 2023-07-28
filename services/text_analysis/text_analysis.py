@@ -103,6 +103,7 @@ def parse_pos(doc):
 
 
     return verbs, adverbs, adjectives
+
 def find_phrasal_verbs(doc):
     """ 
     Function takes a Spacy object 'doc' and parse it to find phrasal verbs. 
@@ -143,3 +144,24 @@ async def  aggregate_content(source):
     aggregated_content = " ".join(content)
     
     return aggregated_content
+
+async def analyse_aggregated_text(text):
+    """ 
+    Function passes the values of 'source' and 'article_id' and passes them 
+    to another function that retrieves the text of the found document.
+    
+    The text will be analysed within with Spacy.
+    """
+    doc = nlp(text[0])
+    
+    total_sentences = parse_sentences(doc)
+    ents_list = parse_entities(doc)
+    verbs, adverbs, adjectives = parse_pos(doc)
+    phrasal_verbs = find_phrasal_verbs(doc)
+   
+    return {"sentences": {"total_sentences": total_sentences},
+            "entities": ents_list,
+            "pos": {"verb_count": len(verbs), "verbs": verbs, 
+                    "adverb_count": len(adverbs), "adverbs": adverbs,
+                    "adjective_count": len(adjectives),"adjectives": adjectives},
+            "phrasal_verbs": phrasal_verbs}
