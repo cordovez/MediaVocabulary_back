@@ -1,10 +1,29 @@
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+
+from models.user_models import User
+
+from ..authorization.auth import get_current_user
+
 from ..controllers.data_control import get_media_data
-from services.text_analysis.text_analysis import analyse_text,aggregate_content, analyse_aggregated_text
+from services.text_analysis.text_analysis import (analyse_text,
+                                                  aggregate_content, analyse_aggregated_text)
 
 data_router = APIRouter()
-    
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@data_router.get("/items/")
+async def read_items(token: Annotated[str,Depends(oauth2_scheme)]):
+    return {"token" : token}
+
+@data_router.get("/users/me")
+async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+    return current_user
 
 @data_router.get("/data/{source}" ) 
 async def get_articles(source):
