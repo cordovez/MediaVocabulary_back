@@ -152,7 +152,8 @@ async def analyse_aggregated_text(text):
     
     The text will be analysed within with Spacy.
     """
-    doc = nlp(text[0])
+    join_text = " ".join(text)
+    doc = nlp(join_text)
     
     total_sentences = parse_sentences(doc)
     ents_list = parse_entities(doc)
