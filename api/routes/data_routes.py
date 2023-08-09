@@ -78,7 +78,7 @@ async def get_aggregated_content_analysis(source):
     return result
     
 
-@data_router.get("/data/article/" ) 
+@data_router.get("/data/article/{source}/{id}" ) 
 async def get_article_analysis(source, id):
     """ 
     Given a source (guardian, for example) and an _id, route returns the 
