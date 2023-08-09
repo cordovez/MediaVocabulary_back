@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from models.media_models import Independent, LATimes, SMH, TheGuardian
 import spacy
+import timeit
 
 nlp = spacy.load('en_core_web_trf')
 
@@ -83,7 +84,8 @@ def parse_pos(doc):
     for token in doc:
         if token.pos_ == "VERB":
             if token.text not in verbs:
-                verbs.append({"verb": token.text, "lemma":token.lemma_})
+                verbs.append(token.text)
+                # verbs.append({"verb": token.text, "lemma":token.lemma_})
         elif token.pos_ == "ADV":
             if token.text not in adverbs:
                 adverbs.append(token.text)
@@ -125,25 +127,28 @@ async def  aggregate_content(source):
     Function concatenates the text from the ten articles return from the 
     source passed as an argument.
     """
-    if source == "guardian":
-        content =  [doc.content for doc in await TheGuardian.find().to_list()]
-    elif source == "latimes":
-        content =  [doc.content for doc in await LATimes.find().to_list()]
-    elif source == "independent":
-        content =  [doc.content for doc in await Independent.find().to_list()]
-    elif source == "smh":
-        content =  [doc.content for doc in await SMH.find().to_list()]
+    list_of_sources = [{"source":"guardian" , "mongo_model": TheGuardian},
+                       {"source":"independent" , "mongo_model": Independent},
+                       {"source":"latimes" , "mongo_model": LATimes},
+                       {"source":"smh" , "mongo_model": SMH}]
+    
+    if source in {"guardian", "latimes", "independent", "smh"}:
+        mongo_model = next(item["mongo_model"] for item in list_of_sources 
+                            if item["source"] == source)
+        content = [doc.content for doc in await mongo_model.find().to_list()]
+        if not content:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return content
+        aggregated_content = " ".join(content)
+        return aggregated_content
+
     else:
-        content =  None
+        return None
 
-    if not content:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return content
+    # aggregated_content = await aggregate_func()
 
-    
-    aggregated_content = " ".join(content)
-    
-    return aggregated_content
+    # return aggregated_content
+ 
 
 async def analyse_aggregated_text(text):
     """ 
@@ -152,17 +157,20 @@ async def analyse_aggregated_text(text):
     
     The text will be analysed within with Spacy.
     """
-    join_text = " ".join(text)
-    doc = nlp(join_text)
+    joined_text = " ".join(text)
+    doc = nlp(joined_text)  
     
     total_sentences = parse_sentences(doc)
     ents_list = parse_entities(doc)
     verbs, adverbs, adjectives = parse_pos(doc)
     phrasal_verbs = find_phrasal_verbs(doc)
    
-    return {"sentences": {"total_sentences": total_sentences},
-            "entities": ents_list,
-            "pos": {"verb_count": len(verbs), "verbs": verbs, 
-                    "adverb_count": len(adverbs), "adverbs": adverbs,
-                    "adjective_count": len(adjectives),"adjectives": adjectives},
-            "phrasal_verbs": phrasal_verbs}
+    return {
+        "verbs": verbs,
+        "adverbs": adverbs,
+        "adjectives": adjectives,
+        "phrasal_verbs": phrasal_verbs,
+        "total_sentences": total_sentences,
+        "entities": ents_list
+    }
+    

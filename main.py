@@ -7,6 +7,8 @@ from db.db import init_db
 from api.routes.spider_routes import spider_router
 from api.routes.data_routes import data_router
 
+from services.text_analysis.text_analysis import aggregate_content, analyse_aggregated_text
+
 
 app=FastAPI()
 app.include_router(spider_router, tags=["spiders"])
@@ -37,3 +39,5 @@ async def connect():
 
 if __name__ == "__main__":
     uvicorn.run(reload=True, app="main:app")
+    
+  
