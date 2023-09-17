@@ -57,7 +57,7 @@ class GuardianSpider(scrapy.Spider):
                 item['date_of_pub'] = None
                     
             text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector p ::text').getall())  # noqa: E501
-            # text = self.extract_if_available(response.css('div.article-body-commercial-selector.article-body-viewer-selector.dcr-1r94quw p.dcr-94xsh ::text').getall())  # noqa: E501
+            
            
             item['content'] = ''.join(text).strip() 
           

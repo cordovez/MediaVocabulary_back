@@ -9,21 +9,13 @@ load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI")
 MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
 
-def get_path_to_project(spider):
-    """ function takes in a spider name ("source") and it is matched to 
-    its corresponding scrapy project directory"""
-    if spider == 'guardian':
-        project = 'guardian_scraper'
-    elif spider == 'indo':
-        project = 'indo_scraper'
-    elif spider == 'latimes':
-        project = 'lat_scraper'
-    elif spider == 'smh':
-        project = 'smh_scraper'
-    else: 
-        project = 'does_not_exist'
-    
-    return project
+MEDIA = {
+    'guardian' :'guardian_scraper',
+    'indo': 'indo_scraper',
+    'latimes': 'lat_scraper',
+    'smh': 'smh_scraper' 
+}
+
     
 spider_router = APIRouter()
 
@@ -39,10 +31,13 @@ def run_spider(source):
 """  # noqa: E501
 
     # scrapy requires that the "command" be called from within the directory 
-    # that contains the spider. This creates the absolute path.
-    scraper_project_route = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'services', get_path_to_project(source)))
+    # that contains the spider. This creates the absolute path to that directory.
+    scraper_project_route = os.path.abspath(os.path.join(os.path.dirname
+                                                         (__file__),
+                                                         '..', '..', 'services',
+                                                         MEDIA[source]))
 
-    # This changes the directory to the above path and calls the command.
+    # This navigates to the directory to the above path and calls the scrapycommand.
     os.chdir(scraper_project_route)
     command = f"scrapy crawl -s MONGODB_URI='{MONGODB_URI}' -s MONGODB_DATABASE='{MONGODB_DATABASE}' {source}"  # noqa: E501
     

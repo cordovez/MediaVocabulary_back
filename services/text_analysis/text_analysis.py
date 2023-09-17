@@ -5,25 +5,29 @@ import timeit
 
 nlp = spacy.load('en_core_web_trf')
 
+# Dictionary Dispatch pattern:
+MEDIA = {
+    'guardian' : TheGuardian,
+    'independent' : Independent,
+    'latimes' : LATimes,
+    'smh' : SMH,
+}
+
 async def find_article(source, article_id):
     """ 
     function takes a source ("guardian" for example) and the document "_id"
     to do a basic text analysis of that text, using spacy.
     """
-    if source == "guardian":
-        article = await TheGuardian.get(article_id)
-    elif source == "latimes":
-        article = await LATimes.get(article_id)
-    elif source == "independent":
-        article = await Independent.get(article_id)
-    elif source == "smh":
-        article = await SMH.get(article_id)
-    else:
-        article =  None
-    if not article:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    if source not in MEDIA:
+        raise ValueError("Unknown Media")
+    data = await MEDIA[source].get(article_id)
     
-    return article.content.replace("\n", " ")
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    article = data.content.replace("\n", " ")
+    
+    return article
+
     
 async def analyse_text(source, article_id):
     """ 
@@ -59,7 +63,9 @@ def parse_sentences(doc):
     sentence_texts = [str(sentence) for sentence in sentence_objects ]
     total_sentences = len(sentence_texts)
     
-    return total_sentences, 
+    return total_sentences 
+
+
 def parse_entities(doc):
     """ 
     Function takes a Spacy object 'doc' and parse it to find entities.
@@ -68,36 +74,29 @@ def parse_entities(doc):
     ents_set = {(ent.text, ent.label_) for ent in doc.ents}
     ents_list = [{"entity":text, "label":label} for text, label in ents_set]
     return ents_list
+
+
 def parse_pos(doc):
     """ 
-    Function takes a Spacy object 'doc' and parse it to find verbs, adverbs, 
+    Function takes a Spacy object 'doc' and parses it to find verbs, adverbs, 
     and adjectives.
     
     Two 'for' loops take care of compound adjectives like "post-op" 
     that are separated at the '-'. 
     """
-
-    verbs = []
-    adverbs = []
-    adjectives =[]
-    
     for token in doc:
-        if token.pos_ == "VERB":
-            if token.text not in verbs:
-                verbs.append(token.text)
-                # verbs.append({"verb": token.text, "lemma":token.lemma_})
-        elif token.pos_ == "ADV":
-            if token.text not in adverbs:
-                adverbs.append(token.text)
-        elif token.pos_ == "ADJ":
-                if token.text not in adjectives:
-                    adjectives.append(token.text)
+        verbs = [token.text for token in doc if token.pos_=='VERB']
+        adverbs = [token.text for token in doc if token.pos_=='ADV']
+        adjectives = [token.text for token in doc if token.pos_=='ADJ']
+        
 
+    # rejoin hyphenated adjectives 
     # example: [... "post", "-", "op" ...] becomes [... "post-op" ...]         
     for i in range(len(adjectives) - 1):
         if adjectives[i+1] == "-":
             adjectives.append(adjectives[i ] + "-" + adjectives[i + 2])
             
+    # and remove separated ones    
     for i in range(len(adjectives) - 1, -1, -1):
         if adjectives[i]== "-":
             adjectives.pop(i) 
@@ -105,6 +104,8 @@ def parse_pos(doc):
 
 
     return verbs, adverbs, adjectives
+
+
 
 def find_phrasal_verbs(doc):
     """ 
@@ -118,8 +119,13 @@ def find_phrasal_verbs(doc):
     for i in range(len(doc) - 1):
         token = doc[i]
         next_token = doc[i + 1]
+            
+        # unseparated
         if token.pos_ == "VERB" and next_token.text in common_particles and token.lemma_ != "’":
             phrasal_verbs.append(f"{token.text} {next_token.text}")
+    
+    
+    
     return phrasal_verbs  
     
 async def  aggregate_content(source):
