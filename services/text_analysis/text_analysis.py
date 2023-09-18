@@ -114,7 +114,7 @@ def find_phrasal_verbs(doc):
     """
 
     common_particles = ["around", "at", "away", "down", "in", "off", 
-                        "on", "out", "over", "round", "up"]
+                        "on", "out", "over", "round", "up", "after", "into", "for"]
     phrasal_verbs = []
     for i in range(len(doc) - 1):
         token = doc[i]
@@ -124,27 +124,41 @@ def find_phrasal_verbs(doc):
         if token.pos_ == "VERB" and next_token.text in common_particles and token.lemma_ != "’":
             phrasal_verbs.append(f"{token.text} {next_token.text}")
     
+    for i in range(len(doc) - 3):
+        token = doc[i]
+        next_token = doc[i +1]
+        second_next_token = doc[i + 2]
+            
+        # separated
+        if token.pos_ == "VERB" and second_next_token.text in common_particles and token.lemma_ != "’":
+            phrasal_verbs.append(f"{token.text} {next_token.text} {second_next_token.text}")
     
     
-    return phrasal_verbs  
+
+            
+    
+    return phrasal_verbs 
     
 async def  aggregate_content(source):
     """
     Function concatenates the text from the ten articles return from the 
     source passed as an argument.
     """
-    list_of_sources = [{"source":"guardian" , "mongo_model": TheGuardian},
-                       {"source":"independent" , "mongo_model": Independent},
-                       {"source":"latimes" , "mongo_model": LATimes},
-                       {"source":"smh" , "mongo_model": SMH}]
+    # list_of_sources = [{"source":"guardian" , "mongo_model": TheGuardian},
+    #                    {"source":"independent" , "mongo_model": Independent},
+    #                    {"source":"latimes" , "mongo_model": LATimes},
+    #                    {"source":"smh" , "mongo_model": SMH}]
     
-    if source in {"guardian", "latimes", "independent", "smh"}:
-        mongo_model = next(item["mongo_model"] for item in list_of_sources 
-                            if item["source"] == source)
-        content = [doc.content for doc in await mongo_model.find().to_list()]
+    if source in MEDIA:
+        content = [doc.content for doc in await MEDIA[source].find().to_list()]
+    
+    # if source in {"guardian", "latimes", "independent", "smh"}:
+    #     mongo_model = next(item["mongo_model"] for item in list_of_sources 
+    #                         if item["source"] == source)
+    #     content = [doc.content for doc in await mongo_model.find().to_list()]
         if not content:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        return content
+        # return content
         aggregated_content = " ".join(content)
         return aggregated_content
 
