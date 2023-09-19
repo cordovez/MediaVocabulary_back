@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 from models.media_models import Independent, LATimes, SMH, TheGuardian
 import spacy
 import timeit
+import string
+import re
 
 nlp = spacy.load('en_core_web_trf')
 
@@ -43,7 +45,7 @@ async def analyse_text(source, article_id):
     ents_list = parse_entities(doc)
     verbs, adverbs, adjectives = parse_pos(doc)
     phrasal_verbs = find_phrasal_verbs(doc)
-   
+    
     return {"sentences": {"total_sentences": total_sentences},
             "entities": ents_list,
             "pos": {"verb_count": len(verbs), "verbs": verbs, 
@@ -84,10 +86,17 @@ def parse_pos(doc):
     Two 'for' loops take care of compound adjectives like "post-op" 
     that are separated at the '-'. 
     """
+    exclude_glyphs = [ '”', '‘', '“', '’']
+    
+     # Create a set of punctuation characters to exclude
+    exclude_punctuation = set(string.punctuation)
+    
+    # set comprehension to avoid duplicates, wrapped in a list()
     for token in doc:
-        verbs = [token.text for token in doc if token.pos_=='VERB']
-        adverbs = [token.text for token in doc if token.pos_=='ADV']
-        adjectives = [token.text for token in doc if token.pos_=='ADJ']
+        if token.text not in exclude_glyphs and token.text not in exclude_punctuation:
+            verbs = list({token.text for token in doc if token.pos_=='VERB'})
+            adverbs = list({token.text for token in doc if token.pos_=='ADV'})
+            adjectives = list({token.text for token in doc if token.pos_=='ADJ'})
         
 
     # rejoin hyphenated adjectives 
